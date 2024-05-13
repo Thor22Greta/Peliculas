@@ -37,7 +37,7 @@
         <h1>Lista de Películas</h1>
         <a href="/nuevaPelicula" class="btn btn-info mb-3">Agregar Película</a>
         <a href="/login" class="btn btn-secondary mb-3">Cerrar Sesión</a>
-        <form action="/buscar" method="GET" class="form-inline search-bar">
+        <form action="/buscar" method="GET" class="form-inline d-flex search-bar">
             <input class="form-control me-2" type="text" name="busqueda" value="<%= busqueda %>" placeholder="Buscar películas">
             <input class="btn btn-outline-success mt-2" type="submit" value="Buscar">
         </form>
@@ -60,10 +60,12 @@
                                         <li><%= actor %></li>
                                     <% }); %>
                                 </ul>
-                                <form action="/eliminarPelicula" method="POST">
-                                    <input type="hidden" name="idPelicula" value="<%= pelicula._id %>">
-                                    <button type="submit" class="btn btn-danger">Eliminar</button>
-                                </form>
+                                <% if (usuarioActual === pelicula.usuario_agregado || usuarioActual === 0) { %>
+                                    <form action="/eliminarPelicula" method="POST">
+                                        <input type="hidden" name="idPelicula" value="<%= pelicula._id %>">
+                                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    </form>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -74,5 +76,3 @@
 
 </body>
 </html>
-
-

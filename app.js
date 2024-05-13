@@ -63,20 +63,29 @@ app.get("/", (req, res, next) => {
     } 
     res.redirect('/login');
 }, (req, res) => {
-    res.send('Inicio');
-})
+    res.redirect('/peliculas'); // Redirigir a la página de películas
+});
 
 app.get("/login", (req, res) => {
-    res.render("login.ejs")
-})
+    res.render("login.ejs", { errorMessage: null });
+});
 
-app.post("/login", passport.authenticate('local',{
-    successRedirect: "/peliculas",
-    failureRedirect: "/login"
-}))
+app.post("/login", function(req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+        if (err) { return next(err); }
+        if (!user) {
+            return res.render("login.ejs", { errorMessage: "Correo electrónico o contraseña incorrectos." });
+        }
+        req.logIn(user, function(err) {
+            if (err) { return next(err); }
+            return res.redirect("/peliculas");
+        });
+    })(req, res, next);
+});
 
 app.get('/peliculas', (req, res, next) => {
     if(req.isAuthenticated()){
+        res.locals.usuarioActual = req.user.numero_usuario; // Pasar el número de usuario actual a la plantilla
         return next();
     } 
     res.redirect('/login');
@@ -89,7 +98,13 @@ app.get('/peliculas', (req, res, next) => {
     }
 });
 
-app.get("/buscar", async (req, res) => {
+app.get("/buscar", (req, res, next) => {
+    if(req.isAuthenticated()){
+        res.locals.usuarioActual = req.user.numero_usuario; // Pasar el número de usuario actual a la plantilla
+        return next();
+    } 
+    res.redirect('/login');
+}, async (req, res) => {
     try {
         let busqueda = req.query.busqueda;
 
@@ -115,8 +130,12 @@ app.get("/buscar", async (req, res) => {
     }
 });
 
-
-app.get("/nuevaPelicula", (req, res) => {
+app.get("/nuevaPelicula", (req, res, next) => {
+    if(req.isAuthenticated()){
+        return next();
+    } 
+    res.redirect('/login');
+}, (req, res) => {
     res.render("nuevaPelicula.ejs");
 });
 
@@ -144,7 +163,6 @@ app.post("/guardarPelicula", async (req, res) => {
     }
 });
 
-
 app.post("/eliminarPelicula", async (req, res) => {
     try {
         const idPelicula = req.body.idPelicula;
@@ -159,7 +177,7 @@ app.post("/eliminarPelicula", async (req, res) => {
 
         // Verificar si el usuario autenticado tiene permiso para eliminar la película
         if (usuarioActual !== pelicula.usuario_agregado && usuarioActual !== 0) {
-            return res.status(403).json({ message: "No tienes permiso para eliminar esta película" });
+            return res.redirect("/peliculas"); // Redirigir sin eliminar y sin mostrar el botón
         }
 
         // Eliminar la película
@@ -181,4 +199,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
-

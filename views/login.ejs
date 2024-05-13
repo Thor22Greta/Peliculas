@@ -32,6 +32,11 @@
                     <h1 class="h3 mb-3 font-weight-normal text-white">CUEVANA GPT 4</h1>
                 </div>
                 <div class="card container-box">
+                    <% if (errorMessage) { %>
+                        <div class="alert alert-danger mt-3" id="error-message">
+                            <%= errorMessage %>
+                        </div>
+                    <% } %>
                     <form action="/login" method="POST">
                         <h2 class="h4 mb-3 text-center">Inicio de sesión</h2>
                         <div class="mb-3">
